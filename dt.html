@@ -1,0 +1,74 @@
+Model the following Automobile information system as a graph model,and
+answer the following queries using Cypher.
+Consider an Automobile industry manufacturing different types of vehicles
+like Two- Wheeler, Four-Wheeler, etc. A customer can buyone or more types
+of vehicle. A person can recommend or rate a vehicletype.
+1. Identify the labels and relationships, along with their properties, and
+draw a high-level Graph model. [3]
+2. Create nodes and relationships, along with their properties, and
+visualize your actual Graph model. [3]
+3. Answer the following Queries:
+a. List the characteristics of four wheeler types. [3]
+b. List the name of customers who bought a two wheeler vehicle. [3]
+c. List the customers who bought more than one type of vehicle. [4]
+d. List the most recommended vehicle type. [4]
+
+# Step 1: Open MongoDB    using mongosh
+mongosh
+
+# Step 2: Create a database for the automobile information system
+use automobile_information_db
+
+# Step 3: Create collections for vehicles, customers, and ratings
+db.vehicles.insertMany([
+  { _id: 1, type: "Two-Wheeler", characteristics: ["Lightweight", "Fuel Efficient", "Compact"], model: "Yamaha FZ", recommended: true },
+  { _id: 2, type: "Four-Wheeler", characteristics: ["Spacious", "Fuel Efficient", "High Speed"], model: "Toyota Corolla", recommended: true },
+  { _id: 3, type: "Two-Wheeler", characteristics: ["Affordable", "Fuel Efficient"], model: "Honda Activa", recommended: false },
+  { _id: 4, type: "Four-Wheeler", characteristics: ["Luxury", "High Speed", "Spacious"], model: "BMW 5 Series", recommended: true },
+  { _id: 5, type: "Two-Wheeler", characteristics: ["Affordable", "Compact"], model: "Suzuki Access", recommended: true }
+])
+
+db.customers.insertMany([
+  { _id: 1, name: "John Doe", purchased_vehicles: [1, 2] },
+  { _id: 2, name: "Jane Smith", purchased_vehicles: [3] },
+  { _id: 3, name: "Alex Johnson", purchased_vehicles: [4, 5] },
+  { _id: 4, name: "Emily Davis", purchased_vehicles: [1] }
+])
+
+# Step 4: Write the Cypher queries to fetch the required results
+
+# a. List the characteristics of four-wheeler types
+db.vehicles.aggregate([
+  { $match: { type: "Four-Wheeler" } },
+  { $project: { model: 1, characteristics: 1 } }
+])
+
+# b. List the names of customers who bought a two-wheeler vehicle
+db.customers.aggregate([
+  { $unwind: "$purchased_vehicles" },
+  { $lookup: {
+      from: "vehicles",
+      localField: "purchased_vehicles",
+      foreignField: "_id",
+      as: "vehicle_details"
+  }},
+  { $match: { "vehicle_details.type": "Two-Wheeler" } },
+  { $project: { name: 1 } }
+])
+
+# c. List the customers who bought more than one type of vehicle
+db.customers.aggregate([
+  { $match: { "purchased_vehicles": { $size: { $gt: 1 } } } },
+  { $project: { name: 1 } }
+])
+
+# d. List the most recommended vehicle type
+db.vehicles.aggregate([
+  { $match: { recommended: true } },
+  { $group: { _id: "$type", count: { $sum: 1 } } },
+  { $sort: { count: -1 } },
+  { $limit: 1 }
+])
+
+# Step 5: Exit MongoDB   
+exit

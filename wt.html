@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Tile and Rotation</title>
+    <style>
+        body {
+            text-align: center;
+            margin: 50px;
+        }
+        .image-container {
+            display: grid;
+            grid-template-columns: repeat(3, 200px);
+            gap: 10px;
+            justify-content: center;
+        }
+        .image-container img {
+            width: 100%;
+            transition: transform 1s;
+        }
+        .rotate:hover {
+            transform: rotate(360deg);
+        }
+    </style>
+</head>
+<body>
+    <h1>Image in Tiles with Rotation</h1>
+    <div class="image-container">
+        <img src="#image" class="rotate" alt="Image 1">
+        <img src="#image" class="rotate" alt="Image 2">
+        <img src="#image" class="rotate" alt="Image 3">
+        <img src="#image" class="rotate" alt="Image 4">
+        <img src="#image" class="rotate" alt="Image 5">
+        <img src="#image" class="rotate" alt="Image 6">
+    </div>
+</body>
+</html>
